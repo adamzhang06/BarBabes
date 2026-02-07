@@ -1,7 +1,9 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, Dimensions } from "react-native";
+import { View, Text, Image, StyleSheet, Dimensions, Pressable } from "react-native";
+import { useRouter } from 'expo-router';
 
 const Screen = () => {
+	const router = useRouter();
 	return (
 		<View style={styles.container}>
 			{/* Background Blobs */}
@@ -48,8 +50,12 @@ const Screen = () => {
 			{/* Input 2 Label */}
 			<Text style={styles.passwordLabel}>Password</Text>
 			{/* Sign Up Button */}
-			<View style={styles.signupBtnBackground} />
-			<Text style={styles.signupBtnText}>SIGN UP NOW</Text>
+			<Pressable
+				style={styles.signupBtnBackground}
+				onPress={() => router.push('/screens/User/Profile')}
+			>
+				<Text style={styles.signupBtnText}>SIGN UP NOW</Text>
+			</Pressable>
 		</View>
 	);
 };
@@ -148,7 +154,7 @@ const styles = StyleSheet.create({
 		width: 241,
 		height: 236,
 		left: 76,
-		top: 110,
+		top: 80,
 		position: "absolute",
 	},
 	googleBtnContainer: {
@@ -191,7 +197,7 @@ const styles = StyleSheet.create({
 		width: 278,
 		height: 23,
 		left: 57,
-		top: 460,
+		top: 440,
 		position: "absolute",
 		justifyContent: "center",
 		alignItems: "center",
@@ -209,7 +215,7 @@ const styles = StyleSheet.create({
 		width: 310,
 		height: 62,
 		left: 41,
-		top: 521,
+		top: 481,
 		position: "absolute",
 		backgroundColor: "rgba(255, 255, 255, 0.15)",
 		borderRadius: 20,
@@ -220,7 +226,7 @@ const styles = StyleSheet.create({
 		width: 106,
 		height: 21,
 		left: 77,
-		top: 541, // 521 (box top) + 20 padding
+		top: 501, // 481 (box top) + 20 padding
 		position: "absolute",
 		textAlign: "center", // inherited from HTML but might need 'left' depending on preference
 		color: "white",
@@ -233,7 +239,7 @@ const styles = StyleSheet.create({
 		width: 310,
 		height: 62,
 		left: 41,
-		top: 592,
+		top: 552,
 		position: "absolute",
 		backgroundColor: "rgba(255, 255, 255, 0.15)",
 		borderRadius: 20,
@@ -244,7 +250,7 @@ const styles = StyleSheet.create({
 		width: 106,
 		height: 21,
 		left: 77,
-		top: 612,
+		top: 572,
 		position: "absolute",
 		color: "white",
 		fontSize: 16,
@@ -256,7 +262,7 @@ const styles = StyleSheet.create({
 		width: 310,
 		height: 67,
 		left: 41,
-		top: 704,
+		top: 634,
 		position: "absolute",
 		backgroundColor: "#F5F2C9",
 		borderRadius: 20,
@@ -264,9 +270,6 @@ const styles = StyleSheet.create({
 		borderColor: "#490419",
 	},
 	signupBtnText: {
-		left: 134,
-		top: 727,
-		position: "absolute",
 		textAlign: "center",
 		color: "#500119",
 		fontSize: 16,
@@ -274,6 +277,7 @@ const styles = StyleSheet.create({
 		fontWeight: "700",
 		lineHeight: 22.4,
 		letterSpacing: 1.6,
+        top: 20, // Center text vertically in the button (67 height - 22.4 lineHeight) / 2
 	},
 });
 
