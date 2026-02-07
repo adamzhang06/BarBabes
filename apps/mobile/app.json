@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "SafeRound",
+    "slug": "saferound",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "saferound",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      [
+        "expo-sensors",
+        { "accelerometer": true }
+      ]
+    ],
+    "ios": {
+      "bundleIdentifier": "com.saferound.app",
+      "infoPlist": {
+        "NFCReaderUsageDescription": "SafeRound uses NFC to validate drinks at the bar.",
+        "NSLocationWhenInUseUsageDescription": "Used for safety check-ins and Life360."
+      }
+    },
+    "android": {
+      "package": "com.saferound.app",
+      "permissions": [
+        "android.permission.NFC",
+        "android.permission.VIBRATE"
+      ],
+      "usesPermission": ["android.permission.NFC"]
+    }
+  }
+}
