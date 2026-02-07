@@ -1,0 +1,102 @@
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+env/
+
+# Backend
+backend/.env
+backend/*.log
+backend/err.log
+backend/out.log
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Node / Expo / React Native
+node_modules/
+.expo/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+*.tsbuildinfo
+
+# Mobile app env (may contain API URLs with tokens)
+apps/mobile/.env
+apps/mobile/.env.local
+
+# Android
+*.apk
+*.aab
+*.keystore
+!debug.keystore
+.gradle/
+**/android/build/
+**/android/app/build/
+**/android/.gradle/
+local.properties
+
+# iOS
+**/ios/Pods/
+**/ios/build/
+**/ios/*.xcworkspace/xcuserdata/
+**/ios/*.xcodeproj/xcuserdata/
+**/ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.hmap
+*.xcconfig
+!default.xcconfig
+*.moved-aside
+
+# Metro
+.metro-health-check*
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Optional: uncomment if you use these
+# *.log
+# *.local
