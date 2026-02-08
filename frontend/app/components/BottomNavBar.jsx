@@ -7,23 +7,23 @@ const { width } = Dimensions.get('window');
 const BottomNavBar = () => {
   const router = useRouter();
   const pathname = usePathname() || '';
-  const isDashboard = pathname.includes('Dashboard') && !pathname.includes('GroupMap');
-  const isMap = pathname.includes('GroupMap');
+  const isDashboard = pathname.includes('dashboard') && !pathname.includes('group-map');
+  const isMap = pathname.includes('group-map');
   const isContextList = pathname.includes('ContextList');
   const isReaction = pathname.includes('ReactionTest');
   // Only navigate when not already on the target screen to avoid redundant navigation/animation
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.navItem} onPress={() => !isDashboard && router.push('../Dashboard/Dashboard')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => !isDashboard && router.push('/dashboard')}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/home.png' }} style={styles.icon} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem} onPress={() => !isMap && router.push('../Dashboard/GroupMapScreen')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => !isMap && router.push('/dashboard/group-map')}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/map.png' }} style={styles.icon} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem} onPress={() => !isContextList && router.push('../Dashboard/ContextList')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => !isContextList && router.push('/screens/Dashboard/ContextList')}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/phone.png' }} style={styles.icon} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem} onPress={() => !isReaction && router.push('../SobrietyTests/ReactionTest')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => !isReaction && router.push('/screens/SobrietyTests/ReactionTest')}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/settings.png' }} style={styles.icon} />
       </TouchableOpacity>
     </View>
