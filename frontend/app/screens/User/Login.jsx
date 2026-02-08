@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { View, Text, Image, StyleSheet, Dimensions, Pressable, TextInput, Alert, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { useRouter } from 'expo-router';
 
+const API_URL = process.env.API_URL;
+
 const validateEmail = (email) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(email);

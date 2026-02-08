@@ -1,3 +1,4 @@
+const API_URL = process.env.API_URL;
 // Profile photo button with silhouette logic
 import { useUser } from "../../context/UserContext";
 import React, { useState } from "react";
@@ -131,7 +132,6 @@ function ProfileScreen() {
   const [weight, setWeight] = useState("");
   const [gender, setGender] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
 
   const handleCompleteSignup = async () => {
     if (!email) {

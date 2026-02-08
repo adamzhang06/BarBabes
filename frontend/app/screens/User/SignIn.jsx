@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, Dimensions, Pressable, TextInput, Alert,
 import { useRouter } from 'expo-router';
 import { useUser } from '../../context/UserContext';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.API_URL;
 
 const validateEmail = (email) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
