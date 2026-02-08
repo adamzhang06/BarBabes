@@ -1,54 +1,70 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import BACRing from './BACRing';
 import MainLayout from '../../MainLayout';
 import BottomNavBar from '../../components/BottomNavBar';
 
 const { width } = Dimensions.get('window');
 
-export default function DashboardScreen() {
+const Dashboard = () => {
+  const [bac, setBac] = useState(0.00);
+  // For demo: cycle through values from 0.00 to 0.30 by 0.01
+  const testValues = Array.from({ length: 31 }, (_, i) => parseFloat((i * 0.01).toFixed(2)));
+  const nextBac = () => {
+    const idx = testValues.findIndex(v => v === bac);
+    setBac(testValues[(idx + 1) % testValues.length]);
+  };
+  // Determine status text based on BAC value (updated ranges)
+  let statusText = '';
+  if (bac === 0) {
+    statusText = 'You are sober';
+  } else if (bac > 0 && bac < 0.04) {
+    statusText = 'Drinking light, relaxed';
+  } else if (bac >= 0.04 && bac < 0.08) {
+    statusText = 'Reduced inhibition';
+  } else if (bac >= 0.08 && bac < 0.15) {
+    statusText = 'You CANNOT drive';
+  } else if (bac >= 0.15 && bac < 0.20) {
+    statusText = 'Blackout possible soon';
+  } else if (bac >= 0.20 && bac <= 0.30) {
+    statusText = 'Coma is possible';
+  }
+
   return (
     <MainLayout>
       <View style={styles.container}>
-        
         {/* Top Label */}
         <Text style={styles.headerLabel}>Your Blood Alcohol Content</Text>
-
         {/* Main Circular Gauge */}
         <View style={styles.gaugeContainer}>
-          {/* Outer Glow/Ring */}
-          <View style={styles.outerRing}>
-            {/* Inner Circle */}
-            <View style={styles.innerCircle}>
-              <Text style={styles.bacValue}>0.06</Text>
-            </View>
-          </View>
+          <BACRing value={bac} size={240} />
+          <TouchableOpacity style={{marginTop: 24, backgroundColor: '#444', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10}} onPress={nextBac}>
+            <Text style={{color: 'white', fontSize: 16, fontWeight: '600'}}>Test Next BAC</Text>
+          </TouchableOpacity>
         </View>
-
         {/* Status Text */}
-        <Text style={styles.statusText}>Take a Break</Text>
-
+        <Text style={styles.statusText}>{statusText}</Text>
         {/* Action Buttons Row */}
         <View style={styles.buttonRow}>
           {/* Button 1: Outlined */}
           <TouchableOpacity style={styles.outlineButton}>
             <Text style={styles.buttonText}>Notify Group</Text>
           </TouchableOpacity>
-
           {/* Button 2: Filled/Glass */}
           <TouchableOpacity style={styles.glassButton}>
             <Text style={styles.buttonText}>Go Home</Text>
           </TouchableOpacity>
         </View>
-
       </View>
-      
       {/* Bottom Navigation Bar */}
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%', zIndex: 100 }}>
         <BottomNavBar />
       </View>
     </MainLayout>
   );
-}
+};
+
+export default Dashboard;
 
 const styles = StyleSheet.create({
   container: {

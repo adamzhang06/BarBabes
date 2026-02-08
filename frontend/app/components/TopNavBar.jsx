@@ -1,21 +1,23 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { useUser } from '../context/UserContext';
 
-const TopNavbar = ({ userName = "Name", imageUri, onNotificationPress }) => {
+const TopNavbar = ({ imageUri, onNotificationPress }) => {
+  const { firstName, photoUri } = useUser();
   return (
     <View style={styles.header}>
       <View style={styles.userInfo}>
         <View style={styles.avatarWrapper}>
           <Image 
-            source={{ uri: imageUri || 'https://placehold.co/32x32/png' }} 
+            source={photoUri ? { uri: photoUri } : { uri: imageUri || 'https://placehold.co/32x32/png' }}
             style={styles.avatar} 
           />
         </View>
-        <Text style={styles.userName}>{userName}</Text>
+        <Text style={styles.userName}>{firstName}</Text>
       </View>
       <TouchableOpacity onPress={onNotificationPress} style={styles.notificationButton}>
          <Image 
-            source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/bell.png' }} 
+            source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/menu--v1.png' }} 
             style={styles.iconImage}
          />
       </TouchableOpacity>

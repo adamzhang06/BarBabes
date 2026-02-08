@@ -2,18 +2,19 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import MainLayout from '../../MainLayout';
 import { useRouter } from 'expo-router';
+import { useUser } from '../../context/UserContext';
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
   const router = useRouter();
+  const { firstName } = useUser();
   return (
     <MainLayout>
       <View style={styles.container}>
-        
         {/* Welcome Text Section */}
         <View style={styles.textSection}>
-          <Text style={styles.greetingText}>Hi, NAME</Text>
+          <Text style={styles.greetingText}>Hi, {firstName}</Text>
           <View style={styles.subtitleContainer}>
             <Text style={styles.subtitleText}>Ready for the night?</Text>
             {/* Small icon next to subtitle (simulated from HTML) */}
@@ -23,23 +24,18 @@ const HomeScreen = () => {
             />
           </View>
         </View>
-        
         {/* Buttons Section */}
         <View style={styles.buttonSection}>
-          
           <ActionButton 
             text="Create Group" 
             iconUri="https://img.icons8.com/ios-glyphs/30/ffffff/plus-math.png"
           />
-
           <ActionButton 
             text="Join Group" 
             iconUri="https://img.icons8.com/ios-filled/50/ffffff/conference-call.png"
             onPress={() => router.push('../Dashboard/Dashboard')}
           />
-
         </View>
-
       </View>
     </MainLayout>
   );
