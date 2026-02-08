@@ -21,6 +21,19 @@ class UserProfile(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class UserProfileUpdate(BaseModel):
+    """Partial update for profile (e.g. BarBabes). All fields optional."""
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    age: Optional[int] = Field(None, ge=18)
+    weight_kg: Optional[float] = Field(None, gt=0)
+    sex: Optional[BiologicalSex] = None
+    primary_contact: Optional[str] = None
+    emergency_contacts: Optional[list[str]] = None  # max 2; validate in router if needed
+    height_cm: Optional[float] = Field(None, ge=0)
+    tolerance: Optional[int] = Field(None, ge=1, le=10)
+
+
 class DrinkRecord(BaseModel):
     drink_id: str
     user_id: str
@@ -74,3 +87,26 @@ class SobrietyResult(BaseModel):
     sobriety_score: int = Field(..., ge=0, le=100)
     recommendation: str
     is_emergency: bool
+
+
+# Simple BAC + reaction time → Gemini recommendation (for dashboard)
+class RecommendationRequest(BaseModel):
+    bac: float = Field(..., ge=0)
+    reaction_time_ms: Optional[float] = Field(None, ge=0)
+
+
+# Group model for Create/Join
+class GroupCreate(BaseModel):
+    user_id: str
+    name: Optional[str] = None
+
+
+class GroupJoin(BaseModel):
+    code: str  # 6-digit
+    user_id: str
+
+
+class GroupNotify(BaseModel):
+    user_id: str
+    group_id: Optional[str] = None  # if not set, backend finds user's group
+    message: Optional[str] = None  # optional override; default includes BAC

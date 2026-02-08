@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.db import get_db
-from app.models import BiologicalSex, UserProfile
+from app.models import BiologicalSex, UserProfile, UserProfileUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -35,6 +35,22 @@ async def get_user(user_id: str, db=Depends(get_db)):
 async def upsert_user(user_id: str, body: UserProfile, db=Depends(get_db)):
     doc = body.model_dump()
     doc["user_id"] = user_id
+    doc["updated_at"] = datetime.now(timezone.utc)
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": doc},
+        upsert=True,
+    )
+    return {"ok": True}
+
+
+@router.patch("/{user_id}")
+async def patch_user(user_id: str, body: UserProfileUpdate, db=Depends(get_db)):
+    """Partial update for profile. Only provided fields are updated."""
+    doc = body.model_dump(exclude_unset=True)
+    if not doc:
+        return {"ok": True}
+    doc["user_id"] = user_id  # from path
     doc["updated_at"] = datetime.now(timezone.utc)
     await db.users.update_one(
         {"user_id": user_id},

@@ -1,30 +1,28 @@
 import React from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { View, TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
 const BottomNavBar = () => {
   const router = useRouter();
+  const pathname = usePathname() || '';
+  const isDashboard = pathname.includes('Dashboard') && !pathname.includes('GroupMap');
+  const isMap = pathname.includes('GroupMap');
+  const isContextList = pathname.includes('ContextList');
+  const isReaction = pathname.includes('ReactionTest');
   return (
     <View style={styles.container}>
-      {/* Home Icon */}
-      <TouchableOpacity style={styles.navItem} onPress={() => router.push('../Dashboard/Dashboard')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => !isDashboard && router.push('../Dashboard/Dashboard')}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/home.png' }} style={styles.icon} />
       </TouchableOpacity>
-      
-      {/* Map Icon (was Stats/Graph) */}
-      <TouchableOpacity style={styles.navItem} onPress={() => router.push('../Dashboard/GroupMapScreen')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => !isMap && router.push('../Dashboard/GroupMapScreen')}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/map.png' }} style={styles.icon} />
       </TouchableOpacity>
-
-      {/* Phone Icon (was Group) */}
-      <TouchableOpacity style={styles.navItem} onPress={() => router.push('../Dashboard/ContextList')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => !isContextList && router.push('../Dashboard/ContextList')}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/phone.png' }} style={styles.icon} />
       </TouchableOpacity>
-      
-      {/* Profile Icon */}
-      <TouchableOpacity style={styles.navItem} onPress={() => router.push('../SobrietyTests/ReactionTest')}>
+      <TouchableOpacity style={styles.navItem} onPress={() => !isReaction && router.push('../SobrietyTests/ReactionTest')}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/settings.png' }} style={styles.icon} />
       </TouchableOpacity>
     </View>

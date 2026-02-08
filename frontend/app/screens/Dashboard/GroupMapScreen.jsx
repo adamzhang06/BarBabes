@@ -12,13 +12,10 @@ import {
 } from 'react-native';
 import MainLayout from '../../MainLayout';
 import BottomNavBar from '../../components/BottomNavBar';
-
-// Import shared contact data
 import { contactData } from '../../data/contacts';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// Include Designated Driver at the top, then alliterative group members
 const GROUP_MEMBER_NAMES = [
   'Designated Diana',
   'Martini Mandy',
@@ -27,13 +24,13 @@ const GROUP_MEMBER_NAMES = [
   'Sangria Samantha',
 ];
 const MOCK_PEOPLE = contactData
-  .filter(c => GROUP_MEMBER_NAMES.includes(c.name))
+  .filter((c) => GROUP_MEMBER_NAMES.includes(c.name))
   .sort((a, b) => GROUP_MEMBER_NAMES.indexOf(a.name) - GROUP_MEMBER_NAMES.indexOf(b.name))
   .map((c, i) => ({
     ...c,
     color: c.statusColor || '#C44',
-    x: [18, 48, 72, 78, 82][i] || 20 + i * 10, // fallback positions
-    y: [28, 52, 55, 22, 26][i] || 30 + i * 5,
+    x: [18, 48, 72, 78, 82][i] ?? 20 + i * 10,
+    y: [28, 52, 55, 22, 26][i] ?? 30 + i * 5,
   }));
 
 const CENTER_LOCATION = "Harry's Chocolate Shop, West Lafayette, IN 47906";
@@ -42,7 +39,6 @@ const BOTTOM_NAV_HEIGHT = 64;
 const COLLAPSED_HEIGHT = 140;
 const EXPANDED_HEIGHT = SCREEN_HEIGHT * 0.55 - BOTTOM_NAV_HEIGHT;
 
-// Dot on the map – each person as their own object
 function PersonDot({ person, onPress }) {
   return (
     <TouchableOpacity
@@ -60,7 +56,6 @@ function PersonDot({ person, onPress }) {
       ]}
     >
       <Text style={styles.dotInitials}>{person.initials}</Text>
-      {/* Show car icon if Designated Diana and BAC is 0.00, overlapping bottom edge */}
       {person.bac === 0 && (
         <View style={styles.carIconContainer}>
           <Text style={styles.carIcon}>🚗</Text>
@@ -171,17 +166,14 @@ export default function GroupMapScreen() {
       <View style={styles.container}>
         {/* ...existing code... */}
 
-        {/* Map area: title, location, pin, dots */}
         <View style={styles.mapArea}>
           <Text style={[styles.title, { marginTop: 0, marginBottom: 0 }]}>Your Group</Text>
           <Text style={[styles.location, { marginTop: 0, marginBottom: 4 }]}>{CENTER_LOCATION}</Text>
-          {/* Harry's background image */}
           <Image
             source={require('../../assets/harrys.png')}
             style={styles.harrysBg}
             resizeMode="cover"
           />
-          {/* Dots – each person as their own positioned object */}
           <View style={styles.dotsContainer} pointerEvents="box-none">
             {MOCK_PEOPLE.map((person) => (
               <PersonDot key={person.id} person={person} />
@@ -298,21 +290,6 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     alignItems: 'center',
   },
-  title: {
-    color: '#fff',
-    fontSize: 26,
-    fontWeight: '700',
-    marginTop: 8,
-    marginBottom: 0,
-  },
-  location: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 14,
-    textAlign: 'center',
-    paddingHorizontal: 24,
-    marginTop: 0,
-    marginBottom: 4,
-  },
   dotsContainer: {
     ...StyleSheet.absoluteFillObject,
     top: 160,
@@ -338,10 +315,6 @@ const styles = StyleSheet.create({
   carIcon: {
     fontSize: 18,
     textAlign: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
   },
   carIconContainer: {
     position: 'absolute',
@@ -353,6 +326,32 @@ const styles = StyleSheet.create({
     height: 24,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  harrysBg: {
+    position: 'absolute',
+    top: 80,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 0,
+    opacity: 0.65,
+  },
+  title: {
+    color: '#fff',
+    fontSize: 26,
+    fontWeight: '700',
+    marginTop: 8,
+    marginBottom: 0,
+  },
+  location: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 24,
+    marginTop: 0,
+    marginBottom: 4,
   },
   carIconContainerProfile: {
     position: 'absolute',
@@ -474,16 +473,5 @@ const styles = StyleSheet.create({
   },
   navIconLabel: {
     fontSize: 24,
-  },
-  harrysBg: {
-    position: 'absolute',
-    top: 80,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-    zIndex: 0,
-    opacity: 0.65,
   },
 });

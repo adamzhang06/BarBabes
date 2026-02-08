@@ -1,8 +1,8 @@
 {
   "expo": {
     "scheme": "barbabes",
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "Barbabes",
+    "slug": "barbabes",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -27,7 +27,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-web-browser"
     ]
   }
 }

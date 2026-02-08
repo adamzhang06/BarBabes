@@ -1,83 +1,200 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  Alert,
+  Linking,
+  ActivityIndicator,
+} from 'react-native';
+import { useRouter } from 'expo-router';
 import BACRing from './BACRing';
 import MainLayout from '../../MainLayout';
 import BottomNavBar from '../../components/BottomNavBar';
 import toastStyles from '../../components/ToastStyles';
+import { useUser } from '../../context/UserContext';
 
 const { width } = Dimensions.get('window');
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
+// One US standard drink ≈ 14g alcohol
+const GRAMS_PER_DRINK = 14;
 
 const Dashboard = () => {
-  const [bac, setBac] = useState(0.00);
-  const [toast, setToast] = useState(null); // { message: string, key: number }
-  // For demo: cycle through values from 0.00 to 0.30 by 0.01
-  const testValues = Array.from({ length: 31 }, (_, i) => parseFloat((i * 0.01).toFixed(2)));
-  const nextBac = () => {
-    const idx = testValues.findIndex(v => v === bac);
-    setBac(testValues[(idx + 1) % testValues.length]);
-  };
-  // Determine status text based on BAC value (updated ranges)
-  let statusText = '';
-  if (bac === 0) {
-    statusText = 'You are sober';
-  } else if (bac > 0 && bac < 0.04) {
-    statusText = 'Drinking light, relaxed';
-  } else if (bac >= 0.04 && bac < 0.08) {
-    statusText = 'Reduced inhibition';
-  } else if (bac >= 0.08 && bac < 0.15) {
-    statusText = 'You CANNOT drive';
-  } else if (bac >= 0.15 && bac < 0.20) {
-    statusText = 'Blackout possible soon';
-  } else if (bac >= 0.20 && bac <= 0.30) {
-    statusText = 'Coma is possible';
-  }
+  const router = useRouter();
+  const { userId, weight, gender, firstName, lastName } = useUser();
+  const [bac, setBac] = useState(0);
+  const [recommendation, setRecommendation] = useState('');
+  const [drinks, setDrinks] = useState(0);
+  const [timeElapsedMinutes, setTimeElapsedMinutes] = useState(0);
+  const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [reactionTimeMs, setReactionTimeMs] = useState(null); // mock or from game
 
-  // Show toast for 2 seconds
+  // Validation & redirect on mount
+  useEffect(() => {
+    const w = weight != null && weight !== '' && !isNaN(parseFloat(weight)) && parseFloat(weight) > 0;
+    const g = gender === 'Male' || gender === 'Female';
+    if (!w || !g) {
+      Alert.alert(
+        'Profile Incomplete',
+        'Please set your weight and gender to calculate BAC.',
+        [{ text: 'OK', onPress: () => router.replace('/profile') }]
+      );
+    }
+  }, [weight, gender, router]);
+
+  const calculateBAC = useCallback(async () => {
+    const w = parseFloat(weight, 10);
+    if (!weight || isNaN(w) || w <= 0) return;
+    const sex = gender === 'Male' ? 'male' : gender === 'Female' ? 'female' : 'male';
+    const weight_kg = w * 0.453592;
+    const alcohol_grams = drinks * GRAMS_PER_DRINK;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/bac/estimate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId || 'anonymous',
+          weight_kg,
+          sex,
+          alcohol_grams,
+          time_elapsed_minutes: timeElapsedMinutes,
+        }),
+      });
+      if (!res.ok) throw new Error('BAC estimate failed');
+      const data = await res.json();
+      setBac(data.bac ?? 0);
+      // Fetch Gemini recommendation
+      const recRes = await fetch(`${API_BASE}/sobriety/recommendation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bac: data.bac ?? 0,
+          reaction_time_ms: reactionTimeMs ?? undefined,
+        }),
+      });
+      if (recRes.ok) {
+        const recData = await recRes.json();
+        setRecommendation(recData.recommendation || '');
+      } else {
+        setRecommendation('');
+      }
+    } catch (e) {
+      setToast({ message: e.message || 'Could not calculate BAC', key: Date.now() });
+      setTimeout(() => setToast((t) => (t?.key === Date.now() ? null : t)), 2000);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, weight, gender, drinks, timeElapsedMinutes, reactionTimeMs]);
+
+  useEffect(() => {
+    if (weight && gender && (drinks > 0 || bac > 0)) {
+      calculateBAC();
+    } else if (drinks === 0 && timeElapsedMinutes === 0) {
+      setBac(0);
+      setRecommendation('');
+    }
+  }, [drinks, timeElapsedMinutes, weight, gender]);
+
   const showToast = (message) => {
     const key = Date.now();
     setToast({ message, key });
-    setTimeout(() => {
-      setToast((t) => (t && t.key === key ? null : t));
-    }, 2000);
+    setTimeout(() => setToast((t) => (t && t.key === key ? null : t)), 2000);
   };
 
-  const handleNotifyGroup = () => {
-    showToast(`You notified your group: BAC status is ${bac.toFixed(2)}`);
-    // Here you could also trigger a real notification/send event
-  };
+  const handleNotifyGroup = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/groups/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          message: bac.toFixed(2),
+        }),
+      });
+      if (res.ok) {
+        showToast(`Group notified. BAC: ${bac.toFixed(2)}`);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.detail || 'Not in a group');
+      }
+    } catch (e) {
+      showToast(e.message || 'Could not notify group');
+    }
+  }, [userId, bac]);
+
+  const handleGoHome = useCallback(() => {
+    handleNotifyGroup();
+    Linking.openURL('uber://?action=setPickup&pickup=my_location').catch(() => {
+      Linking.openURL('https://m.uber.com').catch(() => {});
+    });
+  }, [handleNotifyGroup]);
+
+  const statusText = recommendation || (bac === 0 ? 'You are sober' : `BAC ${bac.toFixed(2)}`);
 
   return (
     <MainLayout>
       <View style={styles.container}>
-        {/* Top Label */}
         <Text style={styles.headerLabel}>Your Blood Alcohol Content</Text>
-        {/* Main Circular Gauge */}
         <View style={styles.gaugeContainer}>
           <BACRing value={bac} size={240} />
-          <TouchableOpacity style={{marginTop: 24, backgroundColor: '#444', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10}} onPress={nextBac}>
-            <Text style={{color: 'white', fontSize: 16, fontWeight: '600'}}>Test Next BAC</Text>
+          {loading && (
+            <View style={styles.loadingWrap}>
+              <ActivityIndicator size="small" color="#fff" />
+            </View>
+          )}
+          {/* Standard drinks stepper */}
+          <View style={styles.stepperRow}>
+            <Text style={styles.stepperLabel}>Standard drinks</Text>
+            <View style={styles.stepper}>
+              <TouchableOpacity
+                style={styles.stepperBtn}
+                onPress={() => setDrinks((d) => Math.max(0, d - 1))}
+              >
+                <Text style={styles.stepperBtnText}>−</Text>
+              </TouchableOpacity>
+              <Text style={styles.stepperValue}>{drinks}</Text>
+              <TouchableOpacity
+                style={styles.stepperBtn}
+                onPress={() => setDrinks((d) => d + 1)}
+              >
+                <Text style={styles.stepperBtnText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <TouchableOpacity style={styles.recalcButton} onPress={calculateBAC}>
+            <Text style={styles.recalcButtonText}>Recalculate BAC</Text>
+          </TouchableOpacity>
+          {/* NFC scaffold: in production use expo-nfc-manager to scan tag and then increment */}
+          <TouchableOpacity
+            style={styles.nfcButton}
+            onPress={() => {
+              setDrinks((d) => d + 1);
+              showToast('NFC Tag Scanned - Drink Added');
+            }}
+          >
+            <Text style={styles.nfcButtonText}>NFC Tap Drink</Text>
           </TouchableOpacity>
         </View>
-        {/* Status Text */}
         <Text style={styles.statusText}>{statusText}</Text>
-        {/* Action Buttons Row */}
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.glassButton} onPress={handleNotifyGroup}>
             <Text style={styles.buttonText}>Notify Group</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.glassButton}>
+          <TouchableOpacity style={styles.glassButton} onPress={handleGoHome}>
             <Text style={styles.buttonText}>Go Home</Text>
           </TouchableOpacity>
         </View>
-        {/* Toast notification */}
         {toast && (
           <View style={toastStyles.toastContainer} pointerEvents="none">
             <Text style={toastStyles.toastText}>{toast.message}</Text>
           </View>
         )}
       </View>
-      {/* Bottom Navigation Bar */}
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%', zIndex: 100 }}>
         <BottomNavBar />
       </View>
@@ -91,7 +208,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 40, // Space from top navbar
+    paddingTop: 40,
   },
   headerLabel: {
     color: 'white',
@@ -106,48 +223,83 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 40,
   },
-  outerRing: {
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.1)',
+  loadingWrap: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    // Shadow to simulate the glow in design
-    shadowColor: '#FF6B6B',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 10,
-    backgroundColor: 'rgba(127, 59, 74, 0.3)', // Subtle dark fill
   },
-  innerCircle: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    borderWidth: 10,
-    borderColor: 'rgba(255, 255, 255, 0.1)', // The "track" of the progress
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    gap: 12,
+  },
+  stepperLabel: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 14,
+  },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 12,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+  },
+  stepperBtn: {
+    width: 40,
+    height: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopColor: '#FF6B6B', // Simulating the "Progress" part at the top
-    borderRightColor: '#FF6B6B', // Continued progress
-    transform: [{ rotate: '-45deg' }], // Rotate so the gap/progress looks natural
   },
-  bacValue: {
+  stepperBtnText: {
     color: 'white',
-    fontSize: 84, // Very large text
-    fontFamily: 'Inter',
-    fontWeight: '300',
-    transform: [{ rotate: '45deg' }], // Counter-rotate text so it's straight
+    fontSize: 22,
+    fontWeight: '600',
+  },
+  stepperValue: {
+    color: 'white',
+    fontSize: 18,
+    minWidth: 32,
+    textAlign: 'center',
+  },
+  recalcButton: {
+    marginTop: 12,
+    backgroundColor: '#444',
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+  },
+  recalcButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  nfcButton: {
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  nfcButtonText: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14,
   },
   statusText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: 'Inter',
     fontWeight: '300',
     marginBottom: 50,
     opacity: 0.9,
+    textAlign: 'center',
+    paddingHorizontal: 24,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -156,21 +308,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 15,
   },
-  outlineButton: {
-    flex: 1,
-    height: 50,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'white',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   glassButton: {
     flex: 1,
     height: 50,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)', // Glassy effect
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
