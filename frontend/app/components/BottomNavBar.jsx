@@ -11,6 +11,7 @@ const BottomNavBar = () => {
   const isMap = pathname.includes('GroupMap');
   const isContextList = pathname.includes('ContextList');
   const isReaction = pathname.includes('ReactionTest');
+  // Only navigate when not already on the target screen to avoid redundant navigation/animation
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.navItem} onPress={() => !isDashboard && router.push('../Dashboard/Dashboard')}>

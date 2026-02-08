@@ -33,18 +33,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [reactionTimeMs, setReactionTimeMs] = useState(null); // mock or from game
 
-  // Validation & redirect on mount
-  useEffect(() => {
-    const w = weight != null && weight !== '' && !isNaN(parseFloat(weight)) && parseFloat(weight) > 0;
-    const g = gender === 'Male' || gender === 'Female';
-    if (!w || !g) {
-      Alert.alert(
-        'Profile Incomplete',
-        'Please set your weight and gender to calculate BAC.',
-        [{ text: 'OK', onPress: () => router.replace('/profile') }]
-      );
-    }
-  }, [weight, gender, router]);
+  // Data guard: if weight or gender missing, block dashboard until user goes to Profile
+  const hasWeight = weight != null && weight !== '' && !isNaN(parseFloat(weight)) && parseFloat(weight) > 0;
+  const hasGender = gender === 'Male' || gender === 'Female';
+  const profileIncomplete = !hasWeight || !hasGender;
 
   const calculateBAC = useCallback(async () => {
     const w = parseFloat(weight, 10);
@@ -136,6 +128,27 @@ const Dashboard = () => {
 
   const statusText = recommendation || (bac === 0 ? 'You are sober' : `BAC ${bac.toFixed(2)}`);
 
+  if (profileIncomplete) {
+    return (
+      <MainLayout>
+        <View style={styles.container}>
+          <Text style={styles.headerLabel}>Profile Incomplete</Text>
+          <Text style={styles.statusText}>
+            Please set your weight and gender in Profile to calculate BAC.
+          </Text>
+          <View style={styles.profileCtaWrap}>
+            <TouchableOpacity
+              style={styles.glassButton}
+              onPress={() => router.replace('/profile')}
+            >
+              <Text style={styles.buttonText}>Go to Profile</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <View style={styles.container}>
@@ -169,12 +182,16 @@ const Dashboard = () => {
           <TouchableOpacity style={styles.recalcButton} onPress={calculateBAC}>
             <Text style={styles.recalcButtonText}>Recalculate BAC</Text>
           </TouchableOpacity>
-          {/* NFC scaffold: in production use expo-nfc-manager to scan tag and then increment */}
+          {/* NFC scaffold (commented): use expo-nfc-manager to scan tag then increment drinks.
+          import NfcManager from 'expo-nfc-manager';
+          useEffect(() => { NfcManager.start(); return () => NfcManager.stop(); }, []);
+          NfcManager.registerTagEvent(tag => { setDrinks(d => d + 1); showToast('Drink added'); });
+          NfcManager.unregisterTagEvent() on unmount. */}
           <TouchableOpacity
             style={styles.nfcButton}
             onPress={() => {
               setDrinks((d) => d + 1);
-              showToast('NFC Tag Scanned - Drink Added');
+              showToast('NFC Tap Drink');
             }}
           >
             <Text style={styles.nfcButtonText}>NFC Tap Drink</Text>
@@ -300,6 +317,11 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     textAlign: 'center',
     paddingHorizontal: 24,
+  },
+  profileCtaWrap: {
+    width: '100%',
+    paddingHorizontal: 30,
+    marginTop: 24,
   },
   buttonRow: {
     flexDirection: 'row',

@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { View, Text, Image, StyleSheet, Dimensions, Pressable, TextInput, Alert, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { useRouter } from 'expo-router';
+import { useUser } from '../../context/UserContext';
+
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
 const validateEmail = (email) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -9,17 +12,21 @@ const validateEmail = (email) => {
 
 const Screen = () => {
   const router = useRouter();
+  const { setUserId } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
 
-  const handleGoogleSignIn = () => {
-    // TODO: Integrate Google sign-in logic here
-    Alert.alert("Google Sign-In", "Google sign-in pressed!");
+  const handleGoogleSignIn = async () => {
+    // TODO: Integrate Firebase/Expo Google Auth (expo-auth-session or @react-native-google-signin/google-signin).
+    // 1. Request Google ID token via Expo AuthSession or native module.
+    // 2. Send token to backend for verification; get or create user.
+    // 3. setUserId(...); router.replace('/screens/Home/HomeScreen') or router.push({ pathname: '/screens/User/Profile', params: { email } }).
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     let valid = true;
     if (!validateEmail(email)) {
       setEmailError("Please enter a valid email address.");
@@ -33,8 +40,21 @@ const Screen = () => {
     } else {
       setPasswordError("");
     }
-    if (valid) {
+    if (!valid) return;
+
+    setAuthLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/users/${encodeURIComponent(email)}`);
+      if (res.ok) {
+        setUserId(email);
+        router.replace('/screens/Home/HomeScreen');
+      } else {
+        router.push({ pathname: '/screens/User/Profile', params: { email } });
+      }
+    } catch (_) {
       router.push({ pathname: '/screens/User/Profile', params: { email } });
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -42,74 +62,54 @@ const Screen = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
         {/* Background Blobs */}
-        {/* Note: Standard RN Views do not support CSS 'filter: blur'.
-            For actual blurs, use react-native-svg or specific blur libraries. */}
-
-        {/* Bottom Red Blob */}
         <View style={[styles.blob, styles.blobBottomRed]} />
-        {/* Bottom Light Blob */}
         <View style={[styles.blob, styles.blobBottomLight]} />
-        {/* Top Red Blob (Right) */}
         <View style={[styles.blob, styles.blobTopRedRight]} />
-        {/* Top Light Blob (Right) */}
         <View style={[styles.blob, styles.blobTopLightRight]} />
-        {/* Top Red Blob (Left) */}
         <View style={[styles.blob, styles.blobTopRedLeft]} />
-        {/* Top Light Blob (Left) */}
         <View style={[styles.blob, styles.blobTopLightLeft]} />
-        {/* Main Center Image */}
-        <Image
-          style={[styles.mainImage, { top: 60 }]}
-          source={require('../../assets/barbabes_logo.png')}
-        />
-        {/* Email/Password UI below logo */}
-        {/* Input 1 (Email) Box */}
-        <View style={[styles.inputBoxEmail, { top: 300 }]} />
-        <TextInput
-          style={[styles.textInput, { left: 60, top: 300, position: 'absolute', width: 270, height: 40, color: 'white' }]}
-          placeholder="Email address"
-          placeholderTextColor="#ccc"
-          value={email}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          onChangeText={setEmail}
-        />
-        {emailError ? (
-          <Text style={{ color: 'red', position: 'absolute', left: 60, top: 340, fontSize: 12, width: 270, textAlign: 'left', backgroundColor: 'transparent', paddingHorizontal: 2, lineHeight: 14 }} numberOfLines={2} ellipsizeMode="tail">{emailError}</Text>
-        ) : null}
-        {/* Input 2 (Password) Box */}
-        <View style={[styles.inputBoxPassword, { top: 370 }]} />
-        <TextInput
-          style={[styles.textInput, { left: 60, top: 370, position: 'absolute', width: 270, height: 40, color: 'white' }]}
-          placeholder="Password"
-          placeholderTextColor="#ccc"
-          value={password}
-          secureTextEntry
-          onChangeText={setPassword}
-        />
-        {passwordError ? (
-          <Text style={{ color: 'red', position: 'absolute', left: 60, top: 410, fontSize: 12, width: 270, textAlign: 'left', backgroundColor: 'transparent', paddingHorizontal: 2, lineHeight: 14 }} numberOfLines={2} ellipsizeMode="tail">{passwordError}</Text>
-        ) : null}
-        {/* Sign Up Button */}
-        <Pressable
-          style={[styles.signupBtnBackground, { top: 450 }]}
-          onPress={handleSignUp}
-        >
-          <Text style={styles.signupBtnText}>SIGN UP NOW</Text>
-        </Pressable>
-        {/* Divider Text */}
-        <View style={[styles.dividerContainer, { top: 530 }]}>
-          <Text style={styles.dividerText}>or you can</Text>
+
+        <Image style={styles.mainImage} source={require('../../assets/barbabes_logo.png')} />
+
+        <View style={styles.formColumn}>
+          <View style={styles.inputBoxEmail}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Email address"
+              placeholderTextColor="#ccc"
+              value={email}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              onChangeText={setEmail}
+            />
+          </View>
+          {emailError ? <Text style={styles.errorText} numberOfLines={2} ellipsizeMode="tail">{emailError}</Text> : null}
+
+          <View style={styles.inputBoxPassword}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Password"
+              placeholderTextColor="#ccc"
+              value={password}
+              secureTextEntry
+              onChangeText={setPassword}
+            />
+          </View>
+          {passwordError ? <Text style={styles.errorText} numberOfLines={2} ellipsizeMode="tail">{passwordError}</Text> : null}
+
+          <Pressable style={styles.signupBtnBackground} onPress={handleSignUp} disabled={authLoading}>
+            <Text style={styles.signupBtnText}>{authLoading ? 'Checking...' : 'SIGN UP NOW'}</Text>
+          </Pressable>
+
+          <View style={styles.dividerContainer}>
+            <Text style={styles.dividerText}>or you can</Text>
+          </View>
+
+          <Pressable style={styles.googleBtnContainerBottom} onPress={handleGoogleSignIn} accessibilityRole="button">
+            <Image style={styles.googleIcon} source={require('../../assets/google-color.png')} />
+            <Text style={styles.googleText}>Sign in with Google</Text>
+          </Pressable>
         </View>
-        {/* Google Sign In Button (now below email/password) */}
-        <Pressable style={[styles.googleBtnContainerBottom, { bottom: 130 }]} onPress={handleGoogleSignIn} accessibilityRole="button">
-          <View style={styles.googleBtnBackgroundBottom} />
-          <Image
-            style={styles.googleIcon}
-            source={require('../../assets/google-color.png')}
-          />
-          <Text style={styles.googleText}>Sign in with Google</Text>
-        </Pressable>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -208,70 +208,22 @@ const styles = StyleSheet.create({
 	mainImage: {
 		width: 241,
 		height: 236,
-		left: 76,
-		top: 80,
 		position: "absolute",
+		top: 60,
+		left: (Dimensions.get('window').width - 241) / 2,
 	},
-	googleBtnContainerBottom: {
-		width: 310,
-		height: 62,
+	formColumn: {
+		position: "absolute",
+		top: 300,
 		left: 41,
-		position: "absolute",
-		bottom: 40,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	googleBtnBackgroundBottom: {
 		width: 310,
-		height: 62,
-		left: 0,
-		top: 0,
-		position: "absolute",
-		backgroundColor: "#2D1B2F",
-		borderRadius: 20,
-	},
-	googleIcon: {
-		width: 30,
-		height: 30,
-		left: 21,
-		top: 16,
-		position: "absolute",
-	},
-	googleText: {
-		left: 82,
-		top: 20,
-		position: "absolute",
-		textAlign: "center",
-		color: "white",
-		fontSize: 16,
-		fontFamily: "Inter",
-		fontWeight: "400",
-		lineHeight: 22.4,
-	},
-	dividerContainer: {
-		width: 278,
-		height: 23,
-		left: 57,
-		top: 440,
-		position: "absolute",
-		justifyContent: "center",
 		alignItems: "center",
-		flexDirection: "row",
-	},
-	dividerText: {
-		textAlign: "center",
-		color: "white",
-		fontSize: 16,
-		fontFamily: "Inter",
-		fontWeight: "400",
-		lineHeight: 22.4,
 	},
 	inputBoxEmail: {
 		width: 310,
 		height: 62,
-		left: 41,
-		top: 481,
-		position: "absolute",
+		justifyContent: "center",
+		alignItems: "center",
 		backgroundColor: "rgba(255, 255, 255, 0.15)",
 		borderRadius: 20,
 		borderWidth: 1,
@@ -280,24 +232,24 @@ const styles = StyleSheet.create({
 	inputBoxPassword: {
 		width: 310,
 		height: 62,
-		left: 41,
-		top: 552,
-		position: "absolute",
+		justifyContent: "center",
+		alignItems: "center",
 		backgroundColor: "rgba(255, 255, 255, 0.15)",
 		borderRadius: 20,
 		borderWidth: 1,
 		borderColor: "rgba(255, 255, 255, 0.50)",
+		marginTop: 12,
 	},
 	signupBtnBackground: {
 		width: 310,
 		height: 67,
-		left: 41,
-		top: 634,
-		position: "absolute",
+		justifyContent: "center",
+		alignItems: "center",
 		backgroundColor: "#F5F2C9",
 		borderRadius: 20,
 		borderWidth: 5,
 		borderColor: "#490419",
+		marginTop: 20,
 	},
 	signupBtnText: {
 		textAlign: "center",
@@ -307,13 +259,63 @@ const styles = StyleSheet.create({
 		fontWeight: "700",
 		lineHeight: 22.4,
 		letterSpacing: 1.6,
-        top: 20, // Center text vertically in the button (67 height - 22.4 lineHeight) / 2
+	},
+	errorText: {
+		color: 'red',
+		fontSize: 12,
+		width: 270,
+		textAlign: 'left',
+		backgroundColor: 'transparent',
+		paddingHorizontal: 2,
+		lineHeight: 14,
+		marginTop: 4,
+	},
+	dividerContainer: {
+		width: 310,
+		height: 23,
+		justifyContent: "center",
+		alignItems: "center",
+		marginTop: 24,
+	},
+	dividerText: {
+		textAlign: "center",
+		color: "white",
+		fontSize: 16,
+		fontFamily: "Inter",
+		fontWeight: "400",
+		lineHeight: 22.4,
+	},
+	googleBtnContainerBottom: {
+		width: 310,
+		height: 62,
+		flexDirection: "row",
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: "#2D1B2F",
+		borderRadius: 20,
+		marginTop: 16,
+		gap: 12,
+	},
+	googleIcon: {
+		width: 30,
+		height: 30,
+	},
+	googleText: {
+		textAlign: "center",
+		color: "white",
+		fontSize: 16,
+		fontFamily: "Inter",
+		fontWeight: "400",
+		lineHeight: 22.4,
 	},
 	textInput: {
 		fontSize: 16,
-		paddingleft: 10,
+		width: 270,
+		paddingHorizontal: 16,
+		paddingVertical: 0,
 		backgroundColor: 'transparent',
 		borderWidth: 0,
+		color: 'white',
 	},
 });
 
