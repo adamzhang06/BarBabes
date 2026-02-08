@@ -14,6 +14,18 @@ class BiologicalSex(str, Enum):
 # Users (user_id = str, e.g. email; MongoDB-compatible)
 # --------------------
 
+class UserCreate(BaseModel):
+    """Body for POST /users (signup). Matches frontend Profile and Login."""
+    user_id: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    age: int = Field(..., ge=18)
+    weight_kg: float = Field(..., gt=0)
+    sex: str  # 'male' | 'female'
+    primary_contact: Optional[str] = None
+    is_cut_off: bool = False
+
+
 class UserProfile(BaseModel):
     user_name: str
     email: str

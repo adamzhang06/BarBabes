@@ -3,13 +3,13 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.db import get_db
-from app.models import BiologicalSex, UserProfile, UserProfileUpdate
+from app.models import BiologicalSex, UserCreate, UserProfile, UserProfileUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post("")
-async def create_user(body: UserProfile, db=Depends(get_db)):
+async def create_user(body: UserCreate, db=Depends(get_db)):
     existing = await db.users.find_one({"user_id": body.user_id})
     if existing:
         raise HTTPException(409, "User already exists")
