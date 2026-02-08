@@ -9,6 +9,10 @@ from app.db import create_client
 from app.routers import bac, drinks, sobriety, users
 from app.services.indexes import create_indexes
 
+# --------------------
+# Logging
+# --------------------
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # --------------------
@@ -16,28 +20,33 @@ logger = logging.getLogger(__name__)
 # --------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # MongoDB: connect, ping, set db, create indexes
+    # ---- MongoDB ----
     client = create_client()
+
     try:
         await client.admin.command("ping")
-        logger.info("Successfully connected to MongoDB Atlas")
+        logger.info("✅ Successfully connected to MongoDB")
     except Exception as e:
-        logger.exception("MongoDB connection failed: %s", e)
-        raise ConnectionError(
-            "MongoDB connection failed. Check MONGODB_URI and network."
+        logger.exception("❌ MongoDB connection failed")
+        raise RuntimeError(
+            "MongoDB connection failed. Check MONGODB_URI."
         ) from e
 
+    # attach db to app state (THIS IS IMPORTANT)
     app.state.db = client.get_database("saferound")
+
+    # create indexes once on startup
     await create_indexes(app.state.db)
 
-    # Shared HTTP client (e.g. Gemini, external APIs)
+    # ---- Shared HTTP client (Gemini, etc.) ----
     app.state.http_client = httpx.AsyncClient(timeout=30.0)
 
-    yield
+    yield  # ---- app runs here ----
 
+    # ---- Shutdown cleanup ----
     await app.state.http_client.aclose()
     client.close()
-
+    logger.info("🛑 Shutdown complete")
 
 # --------------------
 # App initialization
@@ -45,11 +54,12 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="SafeRound API",
     description="Safety and drink validation backend",
+    version="1.0.0",
     lifespan=lifespan,
 )
 
 # --------------------
-# CORS Middleware
+# CORS Middleware (DO NOT REMOVE)
 # --------------------
 app.add_middleware(
     CORSMiddleware,
@@ -57,27 +67,26 @@ app.add_middleware(
         "http://localhost:3000",      # web dev
         "http://localhost:19006",     # expo web
         "http://127.0.0.1:19006",
-        "http://10.186.38.91:19006",  # expo on phone (optional)
+        "http://10.186.38.91:19006",  # expo on phone
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ⚠️ During development ONLY, you can simplify to:
+# ⚠️ Dev-only shortcut (DO NOT SHIP):
 # allow_origins=["*"]
-# (Do NOT ship that to prod with credentials enabled)
 
 # --------------------
 # Routers
 # --------------------
-app.include_router(drinks.router)
-app.include_router(bac.router)
-app.include_router(sobriety.router)
-app.include_router(users.router)
+# app.include_router(drinks.router, prefix="/drinks", tags=["Drinks"])
+# app.include_router(bac.router, prefix="/bac", tags=["BAC"])
+# app.include_router(sobriety.router, prefix="/sobriety", tags=["Sobriety"])
+# app.include_router(users.router, prefix="/users", tags=["Users"])
 
 # --------------------
-# Health & root
+# Root & Health
 # --------------------
 @app.get("/")
 async def root():

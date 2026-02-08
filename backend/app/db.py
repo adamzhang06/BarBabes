@@ -13,7 +13,6 @@ def create_client() -> AsyncIOMotorClient:
         tlsCAFile=certifi.where(),
     )
 
-
 async def get_db(request: Request):
     """Dependency that yields the database session from app.state (set in lifespan)."""
     yield request.app.state.db
