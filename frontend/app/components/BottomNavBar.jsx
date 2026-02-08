@@ -1,9 +1,11 @@
 import React from 'react';
+import { useRouter } from 'expo-router';
 import { View, TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
 const BottomNavBar = () => {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       {/* Home Icon */}
@@ -12,15 +14,15 @@ const BottomNavBar = () => {
       </TouchableOpacity>
       
       {/* Stats/Graph Icon (Active) */}
-      <TouchableOpacity style={styles.navItem}>
+      <TouchableOpacity style={styles.navItem} onPress={() => router.push('../Dashboard/Dashboard')}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/graph.png' }} style={styles.icon} />
-      </TouchableOpacity>
-
+        </TouchableOpacity>
+            
       {/* Group Icon */}
-      <TouchableOpacity style={styles.navItem}>
+      <TouchableOpacity style={styles.navItem} onPress={() => router.push('../Dashboard/GroupMapScreen')}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/user-group-man-man.png' }} style={styles.icon} />
       </TouchableOpacity>
-
+      
       {/* Profile Icon */}
       <TouchableOpacity style={styles.navItem}>
         <Image source={{ uri: 'https://img.icons8.com/ios-filled/50/ffffff/settings.png' }} style={styles.icon} />
@@ -43,7 +45,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: -50,
+    bottom: -35,
     width: '100%',
     zIndex: 100,
   },

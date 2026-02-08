@@ -10,6 +10,9 @@ import {
   PanResponder,
   ScrollView,
 } from 'react-native';
+import MainLayout from '../../MainLayout';
+import TopNavBar from '../../components/TopNavBar';
+import BottomNavBar from '../../components/BottomNavBar';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -120,7 +123,8 @@ export default function GroupMapScreen() {
   ).current;
 
   return (
-    <View style={styles.container}>
+    <MainLayout>
+      <View style={styles.container}>
       {/* Top bar: profile + Name + hamburger */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -173,22 +177,9 @@ export default function GroupMapScreen() {
         </ScrollView>
       </Animated.View>
 
-      {/* Bottom nav bar */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navIcon}>
-          <Text style={styles.navIconLabel}>👤</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navIcon}>
-          <Text style={styles.navIconLabel}>⏱</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navIcon}>
-          <Text style={styles.navIconLabel}>👥</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navIcon}>
-          <Text style={styles.navIconLabel}>🎮</Text>
-        </TouchableOpacity>
+      <BottomNavBar />
       </View>
-    </View>
+    </MainLayout>
   );
 }
 
