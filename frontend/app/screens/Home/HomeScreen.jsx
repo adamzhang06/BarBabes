@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import MainLayout from '../../MainLayout';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
-export default function HomeScreen() {
+const HomeScreen = () => {
+  const router = useRouter();
   return (
     <MainLayout>
       <View style={styles.container}>
@@ -21,7 +23,7 @@ export default function HomeScreen() {
             />
           </View>
         </View>
-
+        
         {/* Buttons Section */}
         <View style={styles.buttonSection}>
           
@@ -33,6 +35,7 @@ export default function HomeScreen() {
           <ActionButton 
             text="Join Group" 
             iconUri="https://img.icons8.com/ios-filled/50/ffffff/conference-call.png"
+            onPress={() => router.push('../Dashboard/Dashboard')}
           />
 
         </View>
@@ -40,11 +43,11 @@ export default function HomeScreen() {
       </View>
     </MainLayout>
   );
-}
+};
 
 // --- Reusable Button Component for this screen ---
-const ActionButton = ({ text, iconUri }) => (
-  <TouchableOpacity activeOpacity={0.8} style={styles.actionButton}>
+const ActionButton = ({ text, iconUri, onPress }) => (
+  <TouchableOpacity activeOpacity={0.8} style={styles.actionButton} onPress={onPress}>
     {/* Icon */}
     <View style={styles.iconContainer}>
       <Image source={{ uri: iconUri }} style={styles.btnIcon} />
@@ -134,3 +137,5 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 });
+
+export default HomeScreen;
