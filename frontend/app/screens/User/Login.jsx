@@ -63,7 +63,7 @@ return (
             {/* Input 1 (Email) Box */}
             <View style={[styles.inputBoxEmail, { top: 300 }]} />
             <TextInput
-                style={[styles.textInput, { left: 60, top: 300, position: 'absolute', width: 270, height: 40, color: 'white' }]}
+                style={[styles.textInput, { left: 60, top: 314, position: 'absolute', width: 270, height: 40, color: 'white' }]}
                 placeholder="Email address"
                 placeholderTextColor="#ccc"
                 value={email}
@@ -72,12 +72,12 @@ return (
                 onChangeText={setEmail}
             />
             {emailError ? (
-                <Text style={{ color: 'red', position: 'absolute', left: 60, top: 340, fontSize: 12, width: 270, textAlign: 'left', backgroundColor: 'transparent', paddingHorizontal: 2, lineHeight: 14 }} numberOfLines={2} ellipsizeMode="tail">{emailError}</Text>
+                <Text style={{ color: 'red', position: 'absolute', left: 58, top: 343, fontSize: 12, width: 270, textAlign: 'left', backgroundColor: 'transparent', paddingHorizontal: 2, lineHeight: 14 }} numberOfLines={2} ellipsizeMode="tail">{emailError}</Text>
             ) : null}
             {/* Input 2 (Password) Box */}
             <View style={[styles.inputBoxPassword, { top: 370 }]} />
             <TextInput
-                style={[styles.textInput, { left: 60, top: 370, position: 'absolute', width: 270, height: 40, color: 'white' }]}
+                style={[styles.textInput, { left: 60, top: 384, position: 'absolute', width: 270, height: 40, color: 'white' }]}
                 placeholder="Password"
                 placeholderTextColor="#ccc"
                 value={password}
@@ -85,7 +85,7 @@ return (
                 onChangeText={setPassword}
             />
             {passwordError ? (
-                <Text style={{ color: 'red', position: 'absolute', left: 60, top: 410, fontSize: 12, width: 270, textAlign: 'left', backgroundColor: 'transparent', paddingHorizontal: 2, lineHeight: 14 }} numberOfLines={2} ellipsizeMode="tail">{passwordError}</Text>
+                <Text style={{ color: 'red', position: 'absolute', left: 58, top: 413, fontSize: 12, width: 270, textAlign: 'left', backgroundColor: 'transparent', paddingHorizontal: 2, lineHeight: 14 }} numberOfLines={2} ellipsizeMode="tail">{passwordError}</Text>
             ) : null}
             {/* Sign Up Button */}
             <Pressable
@@ -99,12 +99,32 @@ return (
                 <Text style={styles.dividerText}>or you can</Text>
             </View>
             {/* Go to SignIn.jsx */}
-            <Pressable
-                style={[styles.signupBtnBackground, { top: 570 }]}
-                onPress={() => router.push('/screens/User/SignIn')}
-            >
-                <Text style={[styles.signupBtnText, { color: '#6B1F2E' }]}>REGISTER</Text>
-            </Pressable>
+						<Pressable
+								style={[styles.signupBtnBackground, { top: 570 }]}
+								onPress={async () => {
+									// Minimal demo: send all required info to /users, then go to HomeScreen.jsx
+									const userPayload = {
+										user_id: email,
+										first_name: 'First',
+										last_name: 'Last',
+										age: 21,
+										weight_kg: 70,
+										sex: 'male',
+										primary_contact: '555-555-5555',
+										is_cut_off: false
+									};
+									try {
+										await fetch((process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000') + '/users', {
+											method: 'POST',
+											headers: { 'Content-Type': 'application/json' },
+											body: JSON.stringify(userPayload),
+										});
+									} catch (e) {}
+									router.replace('/screens/Dashboard/GroupMapScreen');
+								}}
+						>
+								<Text style={[styles.signupBtnText, { color: '#6B1F2E' }]}>REGISTER</Text>
+						</Pressable>
         </View>
     </TouchableWithoutFeedback>
 );

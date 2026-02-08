@@ -5,88 +5,104 @@ import {
   Text, 
   TextInput, 
   TouchableOpacity, 
-  ScrollView, 
   SafeAreaView, 
-  Dimensions 
+  Keyboard, 
+  TouchableWithoutFeedback, 
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import MainLayout from '../../MainLayout';
+import { useUser } from '../../context/UserContext';
+import { useRouter } from 'expo-router';
 
-const { width, height } = Dimensions.get('window');
 
-const ContactItem = ({ initials }) => (
-  <View style={styles.contactCard}>
-    <View style={styles.avatarContainer}>
-      <View style={styles.avatarCircle}>
-        <Text style={styles.avatarText}>{initials}</Text>
-      </View>
-      <Text style={styles.contactName}>Suggested Contact</Text>
-    </View>
-    <TouchableOpacity style={styles.addButton}>
-      <Text style={styles.plusSymbol}>+</Text>
-    </TouchableOpacity>
-  </View>
-);
 
 const CreateGroupScreen = () => {
   const [groupName, setGroupName] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { userId } = useUser();
+  const router = useRouter();
+  const { setGroupId, setGroupCode, setGroupMembers } = useUser();
+
+  const handleCreate = async () => {
+    if (!groupName.trim()) {
+      setError('Group name required');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const apiBase = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+      // Create the group
+      const res = await fetch(apiBase + '/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, name: groupName }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Failed to create group');
+      }
+      const data = await res.json();
+      setGroupId(String(data.group_id ?? ''));
+      setGroupCode(String(data.code ?? ''));
+      setGroupMembers([]);
+      // Join the group as the user
+      const joinRes = await fetch(apiBase + '/groups/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: data.code, user_id: userId }),
+      });
+      if (!joinRes.ok) {
+        const err = await joinRes.json().catch(() => ({}));
+        throw new Error(err.detail || 'Failed to join group after creation');
+      }
+      setLoading(false);
+      router.replace('/screens/Dashboard/Dashboard');
+    } catch (e) {
+      setError(e.message || 'Failed to create group');
+      setLoading(false);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      {/* Background Orbs for Depth */}
-      <View style={[styles.orb, styles.orbLarge]} />
-      <View style={[styles.orb, styles.orbSmall]} />
-
-      <SafeAreaView style={styles.content}>
-        {/* Header Section */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Create a Group</Text>
-          <Text style={styles.subtitle}>Add members and name your group</Text>
+    <MainLayout>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.container}>
+          <SafeAreaView style={styles.content}>
+            <View style={styles.header}>
+              <Text style={styles.title}>Create a Group</Text>
+            </View>
+            <View style={styles.inputGroupNarrow}>
+              <Text style={styles.formLabel}>Group Name</Text>
+              <TextInput
+                style={styles.formInputNarrow}
+                placeholder="Name Your Group"
+                placeholderTextColor="rgba(255,255,255,0.5)"
+                value={groupName}
+                onChangeText={setGroupName}
+                editable={!loading}
+                returnKeyType="done"
+              />
+            </View>
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            <TouchableOpacity style={styles.mainButtonContainer} onPress={handleCreate} disabled={loading}>
+              <LinearGradient
+                colors={['#BE5C5C', '#6E1F30']}
+                style={styles.mainButton}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.mainButtonText}>Create</Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          </SafeAreaView>
         </View>
-
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-          {/* Search Bar */}
-          <View style={styles.searchSection}>
-            <TextInput 
-              style={styles.searchInput}
-              placeholder="Search Contacts"
-              placeholderTextColor="rgba(255,255,255,0.6)"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
-
-          <Text style={styles.sectionLabel}>Suggested</Text>
-          
-          <ContactItem initials="SC" />
-          <ContactItem initials="SC" />
-          <ContactItem initials="SC" />
-          <ContactItem initials="SC" />
-
-          {/* Form Section */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.formLabel}>Group Name</Text>
-            <TextInput 
-              style={styles.formInput}
-              placeholder="Name Your Group"
-              placeholderTextColor="rgba(255,255,255,0.5)"
-              value={groupName}
-              onChangeText={setGroupName}
-            />
-          </View>
-        </ScrollView>
-
-        {/* Footer Button */}
-        <TouchableOpacity style={styles.mainButtonContainer}>
-          <LinearGradient
-            colors={['#BE5C5C', '#6E1F30']}
-            style={styles.mainButton}
-          >
-            <Text style={styles.mainButtonText}>Create</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </SafeAreaView>
-    </View>
+      </TouchableWithoutFeedback>
+    </MainLayout>
   );
 };
 
@@ -208,6 +224,13 @@ const styles = StyleSheet.create({
   inputGroup: {
     marginTop: 20,
   },
+  inputGroupNarrow: {
+    marginTop: 20,
+    alignSelf: 'center',
+    width: '80%',
+    maxWidth: 320,
+    minWidth: 200,
+  },
   formLabel: {
     color: 'white',
     fontSize: 14,
@@ -227,6 +250,30 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '200',
+  },
+  formInputNarrow: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    height: 47,
+    justifyContent: 'center',
+    paddingHorizontal: 15,
+    marginBottom: 20,
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '200',
+    width: '100%',
+    minWidth: 150,
+    maxWidth: 320,
+    alignSelf: 'center',
+  },
+  errorText: {
+    color: '#FFBABA',
+    textAlign: 'center',
+    marginBottom: 10,
+    marginTop: 5,
+    fontSize: 14,
   },
 
   mainButtonContainer: {

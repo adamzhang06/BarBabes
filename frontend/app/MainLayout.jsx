@@ -43,7 +43,7 @@ const MainLayout = ({ children }) => {
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem} onPress={() => {
                 setMenuOpen(false);
-                router.replace('/screens/User/SignIn');
+                router.replace('/screens/User/Login');
               }}>
                 <Text style={styles.menuText}>Log Out</Text>
               </TouchableOpacity>

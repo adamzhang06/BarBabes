@@ -15,26 +15,39 @@ class BiologicalSex(str, Enum):
 # --------------------
 
 class UserProfile(BaseModel):
-    user_id: str
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    age: Optional[int] = Field(None, ge=18)
-    weight_kg: Optional[float] = Field(None, gt=0)
-    sex: Optional[BiologicalSex] = None
+    user_name: str
+    email: str
+    password: str
+    age: int = Field(..., ge=18)
+    weight_lb: float = Field(..., gt=0)
+    sex: BiologicalSex
+    number: str
     primary_contact: Optional[str] = None
     is_cut_off: bool = False
-
-
-class UserProfileUpdate(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    age: Optional[int] = Field(None, ge=18)
-    weight_kg: Optional[float] = Field(None, gt=0)
-    sex: Optional[BiologicalSex] = None
-    primary_contact: Optional[str] = None
-    emergency_contacts: Optional[list[str]] = None
     height_cm: Optional[float] = Field(None, ge=0)
     tolerance: Optional[int] = Field(None, ge=1, le=10)
+
+
+class UserEvent(BaseModel):
+    user_id: int
+    group_id: int
+    bac_level: float = Field(..., ge=0)
+    is_cut_off: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class DrinkRecord(BaseModel):
+    user_id: int
+    bar_name: str
+    drink_id: str
+    bac_level: float = Field(..., ge=0)
+    alcohol_grams: float = Field(..., ge=0)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class GroupProfile(BaseModel):
+    group_name: str
+    user_list: List[int]
 
 
 # --------------------
