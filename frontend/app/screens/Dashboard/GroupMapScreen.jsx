@@ -13,16 +13,28 @@ import {
 import MainLayout from '../../MainLayout';
 import BottomNavBar from '../../components/BottomNavBar';
 
+// Import shared contact data
+import { contactData } from '../../data/contacts';
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// Each person is an object: id, name, initials, color, position (x%, y%) for the map dot
-const MOCK_PEOPLE = [
-  { id: '1', name: 'Crunk Cynthia', initials: 'CC', color: '#C44', x: 18, y: 28 },
-  { id: '2', name: 'Designated Dave', initials: 'DD', color: '#7B68EE', x: 48, y: 52 },
-  { id: '3', name: 'Green Mike', initials: 'GM', color: '#4CAF50', x: 72, y: 55 },
-  { id: '4', name: 'Brown Sam', initials: 'GM', color: '#CD853F', x: 78, y: 22 },
-  { id: '5', name: 'Orange Alex', initials: 'GM', color: '#D2691E', x: 82, y: 26 },
+// Include Designated Driver at the top, then alliterative group members
+const GROUP_MEMBER_NAMES = [
+  'Designated Driver',
+  'Martini Mandy',
+  'Cosmo Cassidy',
+  'Bubbly Bonnie',
+  'Sangria Samantha',
 ];
+const MOCK_PEOPLE = contactData
+  .filter(c => GROUP_MEMBER_NAMES.includes(c.name))
+  .sort((a, b) => GROUP_MEMBER_NAMES.indexOf(a.name) - GROUP_MEMBER_NAMES.indexOf(b.name))
+  .map((c, i) => ({
+    ...c,
+    color: c.statusColor || '#C44',
+    x: [18, 48, 72, 78, 82][i] || 20 + i * 10, // fallback positions
+    y: [28, 52, 55, 22, 26][i] || 30 + i * 5,
+  }));
 
 const CENTER_LOCATION = "Harry's Chocolate Shop, West Lafayette, IN 47906";
 
@@ -133,7 +145,8 @@ export default function GroupMapScreen() {
 
   // Bell button handler
   const handleBellPress = (person) => {
-    showToast(`You alerted ${person.name} of their BAC status`);
+    const bac = typeof person.bac === 'number' ? person.bac.toFixed(2) : 'N/A';
+    showToast(`You alerted ${person.name} of their BAC status (BAC: ${bac})`);
     // Here you could also trigger a real notification/send event
   };
 

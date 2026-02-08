@@ -3,11 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-nati
 import BACRing from './BACRing';
 import MainLayout from '../../MainLayout';
 import BottomNavBar from '../../components/BottomNavBar';
+import toastStyles from '../../components/ToastStyles';
 
 const { width } = Dimensions.get('window');
 
+
 const Dashboard = () => {
   const [bac, setBac] = useState(0.00);
+  const [toast, setToast] = useState(null); // { message: string, key: number }
   // For demo: cycle through values from 0.00 to 0.30 by 0.01
   const testValues = Array.from({ length: 31 }, (_, i) => parseFloat((i * 0.01).toFixed(2)));
   const nextBac = () => {
@@ -30,6 +33,20 @@ const Dashboard = () => {
     statusText = 'Coma is possible';
   }
 
+  // Show toast for 2 seconds
+  const showToast = (message) => {
+    const key = Date.now();
+    setToast({ message, key });
+    setTimeout(() => {
+      setToast((t) => (t && t.key === key ? null : t));
+    }, 2000);
+  };
+
+  const handleNotifyGroup = () => {
+    showToast(`You notified your group: BAC status is ${bac.toFixed(2)}`);
+    // Here you could also trigger a real notification/send event
+  };
+
   return (
     <MainLayout>
       <View style={styles.container}>
@@ -46,15 +63,19 @@ const Dashboard = () => {
         <Text style={styles.statusText}>{statusText}</Text>
         {/* Action Buttons Row */}
         <View style={styles.buttonRow}>
-          {/* Button 1: Outlined */}
-          <TouchableOpacity style={styles.outlineButton}>
+          <TouchableOpacity style={styles.glassButton} onPress={handleNotifyGroup}>
             <Text style={styles.buttonText}>Notify Group</Text>
           </TouchableOpacity>
-          {/* Button 2: Filled/Glass */}
           <TouchableOpacity style={styles.glassButton}>
             <Text style={styles.buttonText}>Go Home</Text>
           </TouchableOpacity>
         </View>
+        {/* Toast notification */}
+        {toast && (
+          <View style={toastStyles.toastContainer} pointerEvents="none">
+            <Text style={toastStyles.toastText}>{toast.message}</Text>
+          </View>
+        )}
       </View>
       {/* Bottom Navigation Bar */}
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%', zIndex: 100 }}>
