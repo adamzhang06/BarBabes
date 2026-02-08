@@ -1,8 +1,6 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, Dimensions } from "react-native";
   
-import SignInScreen from './screens/User/SignIn';
+import Login from './screens/User/Login';
 
-  export default function App() {
-    return <SignInScreen />;
-  }
+export default Login;

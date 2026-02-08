@@ -29,85 +29,83 @@ const Screen = () => {
       setPasswordError("");
     }
     if (valid) {
-      Alert.alert("Sign Up Successful", "Your account was created. Please log in.", [
-        { text: "OK", onPress: () => router.push('/screens/User/Login') }
-      ]);
+      router.push({ pathname: '/screens/User/Profile', params: { email } });
     }
   };
 
-  return (
+return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
-        {/* Background Blobs */}
-        {/* Note: Standard RN Views do not support CSS 'filter: blur'.
-            For actual blurs, use react-native-svg or specific blur libraries. */}
-        
-        {/* Bottom Red Blob */}
-        <View style={[styles.blob, styles.blobBottomRed]} />
-        {/* Bottom Light Blob */}
-        <View style={[styles.blob, styles.blobBottomLight]} />
-        {/* Top Red Blob (Right) */}
-        <View style={[styles.blob, styles.blobTopRedRight]} />
-        {/* Top Light Blob (Right) */}
-        <View style={[styles.blob, styles.blobTopLightRight]} />
-        {/* Top Red Blob (Left) */}
-        <View style={[styles.blob, styles.blobTopRedLeft]} />
-        {/* Top Light Blob (Left) */}
-        <View style={[styles.blob, styles.blobTopLightLeft]} />
-        {/* Main Center Image */}
-        <Image
-          style={[styles.mainImage, { top: 60 }]}
-          source={require('../../assets/barbabes_logo.png')}
-        />
-        {/* Email/Password UI below logo */}
-        {/* Input 1 (Email) Box */}
-        <View style={[styles.inputBoxEmail, { top: 300 }]} />
-        <TextInput
-          style={[styles.textInput, { left: 60, top: 300, position: 'absolute', width: 270, height: 40, color: 'white' }]}
-          placeholder="Email address"
-          placeholderTextColor="#ccc"
-          value={email}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          onChangeText={setEmail}
-        />
-        {emailError ? (
-          <Text style={{ color: 'red', position: 'absolute', left: 60, top: 340, fontSize: 12, width: 270, textAlign: 'left', backgroundColor: 'transparent', paddingHorizontal: 2, lineHeight: 14 }} numberOfLines={2} ellipsizeMode="tail">{emailError}</Text>
-        ) : null}
-        {/* Input 2 (Password) Box */}
-        <View style={[styles.inputBoxPassword, { top: 370 }]} />
-        <TextInput
-          style={[styles.textInput, { left: 60, top: 370, position: 'absolute', width: 270, height: 40, color: 'white' }]}
-          placeholder="Password"
-          placeholderTextColor="#ccc"
-          value={password}
-          secureTextEntry
-          onChangeText={setPassword}
-        />
-        {passwordError ? (
-          <Text style={{ color: 'red', position: 'absolute', left: 60, top: 410, fontSize: 12, width: 270, textAlign: 'left', backgroundColor: 'transparent', paddingHorizontal: 2, lineHeight: 14 }} numberOfLines={2} ellipsizeMode="tail">{passwordError}</Text>
-        ) : null}
-        {/* Sign Up Button */}
-        <Pressable
-          style={[styles.signupBtnBackground, { top: 450, backgroundColor: '#81da92' }]}
-          onPress={handleSignUp}
-        >
-          <Text style={styles.signupBtnText}>CREATE YOUR ACCOUNT</Text>
-        </Pressable>
-        {/* Divider Text */}
-        <View style={[styles.dividerContainer, { top: 530 }]}>
-          <Text style={styles.dividerText}>or you can</Text>
+        <View style={styles.container}>
+            {/* Background Blobs */}
+            {/* Note: Standard RN Views do not support CSS 'filter: blur'.
+                    For actual blurs, use react-native-svg or specific blur libraries. */}
+
+            {/* Bottom Red Blob */}
+            <View style={[styles.blob, styles.blobBottomRed]} />
+            {/* Bottom Light Blob */}
+            <View style={[styles.blob, styles.blobBottomLight]} />
+            {/* Top Red Blob (Right) */}
+            <View style={[styles.blob, styles.blobTopRedRight]} />
+            {/* Top Light Blob (Right) */}
+            <View style={[styles.blob, styles.blobTopLightRight]} />
+            {/* Top Red Blob (Left) */}
+            <View style={[styles.blob, styles.blobTopRedLeft]} />
+            {/* Top Light Blob (Left) */}
+            <View style={[styles.blob, styles.blobTopLightLeft]} />
+            {/* Main Center Image */}
+            <Image
+                style={[styles.mainImage, { top: 60 }]}
+                source={require('../../assets/barbabes_logo.png')}
+            />
+            {/* Email/Password UI below logo */}
+            {/* Input 1 (Email) Box */}
+            <View style={[styles.inputBoxEmail, { top: 300 }]} />
+            <TextInput
+                style={[styles.textInput, { left: 60, top: 300, position: 'absolute', width: 270, height: 40, color: 'white' }]}
+                placeholder="Email address"
+                placeholderTextColor="#ccc"
+                value={email}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                onChangeText={setEmail}
+            />
+            {emailError ? (
+                <Text style={{ color: 'red', position: 'absolute', left: 60, top: 340, fontSize: 12, width: 270, textAlign: 'left', backgroundColor: 'transparent', paddingHorizontal: 2, lineHeight: 14 }} numberOfLines={2} ellipsizeMode="tail">{emailError}</Text>
+            ) : null}
+            {/* Input 2 (Password) Box */}
+            <View style={[styles.inputBoxPassword, { top: 370 }]} />
+            <TextInput
+                style={[styles.textInput, { left: 60, top: 370, position: 'absolute', width: 270, height: 40, color: 'white' }]}
+                placeholder="Password"
+                placeholderTextColor="#ccc"
+                value={password}
+                secureTextEntry
+                onChangeText={setPassword}
+            />
+            {passwordError ? (
+                <Text style={{ color: 'red', position: 'absolute', left: 60, top: 410, fontSize: 12, width: 270, textAlign: 'left', backgroundColor: 'transparent', paddingHorizontal: 2, lineHeight: 14 }} numberOfLines={2} ellipsizeMode="tail">{passwordError}</Text>
+            ) : null}
+            {/* Sign Up Button */}
+            <Pressable
+                style={[styles.signupBtnBackground, { top: 450 }]}
+                onPress={handleSignUp}
+            >
+                <Text style={styles.signupBtnText}>LOG IN</Text>
+            </Pressable>
+            {/* Divider Text */}
+            <View style={[styles.dividerContainer, { top: 530 }]}>
+                <Text style={styles.dividerText}>or you can</Text>
+            </View>
+            {/* Go to SignIn.jsx */}
+            <Pressable
+                style={[styles.signupBtnBackground, { top: 570 }]}
+                onPress={() => router.push('/screens/User/SignIn')}
+            >
+                <Text style={[styles.signupBtnText, { color: '#6B1F2E' }]}>REGISTER</Text>
+            </Pressable>
         </View>
-		
-		<Pressable
-          style={[styles.signupBtnBackground, { top: 570 }]}
-          onPress={() => router.push('/screens/User/Login')}
-        >
-          <Text style={styles.signupBtnText}>GO BACK TO LOGIN</Text>
-        </Pressable>
-      </View>
     </TouchableWithoutFeedback>
-  );
+);
 };
 
 const styles = StyleSheet.create({
