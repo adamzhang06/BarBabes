@@ -70,7 +70,7 @@ export default function ProfileScreen() {
             <TouchableOpacity
               activeOpacity={0.8}
               style={styles.mainButton}
-              onPress={() => router.push('/Home/HomeScreen')}
+              onPress={() => router.push('../Home/HomeScreen')}
             >
               <Text style={styles.buttonText}>Discover Your BAC Tolerance</Text>
             </TouchableOpacity>

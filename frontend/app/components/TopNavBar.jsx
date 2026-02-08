@@ -31,6 +31,11 @@ const styles = StyleSheet.create({
     height: 60, // Fixed height for consistency
     paddingHorizontal: 24,
     width: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
   },
   userInfo: {
     flexDirection: 'row',

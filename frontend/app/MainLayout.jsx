@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, StatusBar, SafeAreaView, Dimensions } from 'react-native';
+import { View, StyleSheet, StatusBar, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import TopNavbar from './components/TopNavBar';
 
 const { height } = Dimensions.get('window');
